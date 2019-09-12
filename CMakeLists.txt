@@ -3,4 +3,4 @@ project(Cities)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Cities main.cpp City.cpp City.hpp)
+add_executable(Cities main.cpp City.cpp City.hpp Floyd.cpp Floyd.hpp)

@@ -36,9 +36,9 @@ int City::getDistance(City const &city)
 	if (this == &city)
 		return (0);
 	else if (this->end == city.start)
-		return (-(this->len + city.len));
+		return (-(city.len));
 	else
-		return (INT32_MAX);
+		return (2000000);
 }
 
 unsigned int City::cityCounter = 0;
