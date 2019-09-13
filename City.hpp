@@ -10,7 +10,7 @@
 class City
 {
 
-private:
+public:
 
 	std::string				name;
 	char 					start;
@@ -22,7 +22,6 @@ private:
 
 	unsigned int letterCounter(std::string const &str);
 
-public:
 
 	City(std::string const &cityName);
 
