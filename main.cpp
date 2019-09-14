@@ -1,127 +1,115 @@
-#include <iostream>
+#include <string>
 #include <vector>
-#include <fstream>
-#include <iomanip>
-#include "City.hpp"
-#include "Floyd.hpp"
-
-
 #include <map>
 #include <deque>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-std::map<char, std::vector<City>>	getAlphabet;
+using namespace std;
+
+vector<string> combine_cities(vector<string> available_cities);
+vector<string> read_available_cities();
+int write_to_file(vector<string> cities_list);
+
+int	getMaxIndex(char lastLetter, map<char, deque<string > >	&letter);
+char getLetterForStart(map<char, deque<string > > &letter, vector<string> &cities);
 
 
-int main()
+int main() 
 {
-	std::vector<City>	cities;
-	std::string			line;
-	std::ifstream		file;
+  vector<string> available_cities = read_available_cities();
 
-	int 				row;
-	int 				col;
+  vector<string> cities_list = combine_cities(available_cities);
 
+  return write_to_file(cities_list);
+}
 
-	file.open("cities.txt");
-	while (getline(file, line))
-		cities.emplace_back(line);
+vector<string> combine_cities(vector<string> available_cities) {
 
-	std::map<char, std::deque<City>>	letter;
-	std::deque<unsigned long>	chain;
+	map<char, deque<string > >	letter;
+	char						lastLetter;
+    int                         maxIndex;
+    string                      tmpCity;
 
-	for(City const &c : cities)
-		letter[c.start].push_front(c);
+	for(vector<string>::iterator c = available_cities.begin(); c != available_cities.end(); c++) {
+        (*c)[0] = tolower((*c)[0]);
+        letter[(*c).front()].push_back(*c);
+    }
 
-	srand(time(nullptr));
+	lastLetter = getLetterForStart(letter, available_cities);
 
-	char	lastLetter;
-	int 	randIndex;
-
-	randIndex = rand() % cities.size();
-
-	City	tmpCity = cities[randIndex];
-	lastLetter = tmpCity.end;
+	available_cities.clear();
 
 	while (letter[lastLetter].size())
 	{
-		int i = 0;
-		int maxIndex = 0;
-		int maxSize = 0;
+		maxIndex = getMaxIndex(lastLetter, letter);
+        tmpCity = letter[lastLetter][maxIndex];
 
-		int maxLen = 0;
-
-		for (City city : letter[lastLetter])
-		{
-			if (letter[city.end].size() > maxSize)
-			{
-				maxSize = letter[city.end].size();
-				maxLen = city.len;
-				maxIndex = i;
-			} else if (letter[city.end].size() == maxSize &&
-					city.len > maxLen)
-			{
-				maxIndex = i;
-				maxLen = city.len;
-			}
-
-			i++;
-		}
-
-		tmpCity = letter[lastLetter][maxIndex];
-		chain.push_back(tmpCity.index);
+        tmpCity[0] = toupper(tmpCity[0]);
+		available_cities.push_back(tmpCity);
 		letter[lastLetter].erase(letter[lastLetter].begin() + maxIndex);
-		lastLetter = tmpCity.end;
-		std::cout << cities.at(chain.back()).name << "->" << std::flush;
+		lastLetter = tmpCity.back();
 	}
+	return available_cities;
+}
 
-	int size = 0;
-	for (int i : chain)
-		size += cities.at(i).len;
+vector<string> read_available_cities() {
+  string line;
+  ifstream input_file ("input.txt");
+  vector<string> available_cities;  
+  while ( getline (input_file,line) )
+  {
+    available_cities.push_back(line);
+  }
+  input_file.close();
 
-	std::cout << std::endl << size << std::endl;
+  return available_cities;
+}
 
-	int maxLen = 0;
-	for (City city : cities)
-		maxLen += city.len;
+int write_to_file(vector<string> cities_list) {
+  ofstream output_file("./output.txt");
+  ostream_iterator<string> output_iterator(output_file, "\n");
+  copy(cities_list.begin(), cities_list.end(), output_iterator);
 
-	std::cout << "Max: " << maxLen;
+  return 0;
+}
 
+int	getMaxIndex(char lastLetter, map<char, deque<string > > &letter)
+{
+	int 			i = 0;
+	int 			maxIndex = 0;
+	unsigned int 	maxSize = 0;
+	unsigned int 	maxLen = 0;
 
-//	std::cout <<  letter['k'][24].name << letter['k'][25].name << std::endl;
-//	letter['k'].erase(letter['k'].begin() + 25);
-//	std::cout <<  letter['k'][24].name << letter['k'][25].name << std::endl;
+    for(deque<string>::iterator c = letter[lastLetter].begin(); c != letter[lastLetter].end(); c++)
+	{
+		if (letter[(*c).back()].size() > maxSize)
+		{
+			maxSize = letter[(*c).back()].size();
+			maxLen = (*c).size();
+			maxIndex = i;
+		}
+		else if (letter[(*c).back()].size() == maxSize && (*c).size() > maxLen)
+		{
+			maxIndex = i;
+			maxLen = (*c).size();
+		}
+		i++;
+	}
+	return maxIndex;
+}
 
+char getLetterForStart(map<char, deque<string > > &letter, vector<string> &cities)
+{
+	unsigned int 	maxEndLetter = 0;
+	char			lastLetter = 'a';
 
-//	for (cur=letter.begin();cur!=letter.end();cur++)
-//	{
-//		std::cout << (*cur).first << ": " << (*cur).second << std::endl;
-//	}
-
-//	// Allocate memory for incident matrix
-//	int **incidentMatrix = new int*[cities.size()];
-//	for (int i = 0; i < cities.size(); i++)
-//		incidentMatrix[i] = new int[cities.size()];
-//
-//	row = 0;
-//	while (row < cities.size())
-//	{
-//		col = 0;
-//		while (col < cities.size())
-//		{
-//			// filling incidentMatrix
-//			incidentMatrix[row][col] = cities[row].getDistance(cities[col]);
-//
-//			col++;
-//		}
-//		row++;
-//	}
-
-//	for (row = 0; row < cities.size(); row++)
-//	{
-//		for (col = 0; col < cities.size(); col++)
-//			std::cout << std::setw(3) << directionMatrix[row][col] << " ";
-//		std::cout << std::endl;
-//	}
-
-	return 0;
+    for(vector<string>::iterator c = cities.begin(); c != cities.end(); c++)
+		if (letter[(*c).back()].size() > maxEndLetter)
+		{
+			maxEndLetter = letter[(*c).back()].size();
+			lastLetter = (*c).back();
+		}
+	return (lastLetter);
 }

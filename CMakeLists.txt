@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 project(Cities)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
 
-add_executable(Cities main.cpp City.cpp City.hpp Floyd.cpp Floyd.hpp)
+set(CMAKE_CXX_STANDARD 11)
+
+add_executable(Cities main.cpp)
